@@ -6,8 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>mObywatel</title>
 
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#000000"> <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoibU9ieXdhdGVsIiwic2hvcnRfbmFtZSI6Im1PYnl3YXRlbCIsInRoZW1lX2NvbG9yIjoiIzAwMDAwMCIsImJhY2tncm91bmRfY29sb3IiOiIjMDAwMDAwIiwiZGlzcGxheIjoic3RhbmRhbG9uZSIsInN0YXJ0X3VybCI6ImluZGV4Lmh0bWwifQ==">
+    <meta name="theme-color" content="#000000">
+    
+    <link rel="manifest" href="manifest.json">
 
     <style>
         body, html {
@@ -47,10 +51,17 @@
     </div>
 
     <script>
+        // Rejestracja Service Workera (wymagane dla PWA)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(function(err) {
+                console.log("Błąd Service Workera: ", err);
+            });
+        }
+
         window.addEventListener('load', function() {
             // Czekamy 3 sekundy na animację Quebo
             setTimeout(function() {
-                // Po 3 sekundach przekierowujemy do właściwej treści (np. id.html)
+                // Przekierowanie do właściwej treści
                 window.location.href = "id.html";
             }, 3000); 
         });
