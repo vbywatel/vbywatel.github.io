@@ -1,0 +1,31 @@
+<head>
+    <meta charset="UTF-8">
+    <title>mObywatel</title>
+
+    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoibU9ieXdhdGVsIiwic2hvcnRfbmFtZSI6Im1PYnl3YXRlbCIsInRoZW1lX2NvbG9yIjoiIzEwMTMxNyIsImJhY2tncm91bmRfY29sb3IiOiIjMTAxMzE3IiwiZGlzcGxheIjoic3RhbmRhbG9uZSIsInN0YXJ0X3VybCI6ImluZGV4Lmh0bWwifQ==">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="mObywatel">
+    <meta name="theme-color" content="#101317">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    
+    <script>
+        window.onload = function() {
+            // Sprawdzamy, czy mamy już zapisane dane w telefonie
+            const dane = localStorage.getItem('moje_dane_id');
+            
+            if (dane) {
+                // Jeśli dane są, idziemy do logowania z dopisanymi danymi
+                window.location.href = "id.html?" + dane;
+            } else {
+                // Jeśli nie ma danych, idziemy do generatora
+                window.location.href = "gen.html";
+            }
+        };
+    </script>
+</head>
+<body style="background: #101317; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0;">
+    <p>Ładowanie...</p>
+</body>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>mObywatel</title>
+
+    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoibU9ieXdhdGVsIiwic2hvcnRfbmFtZSI6Im1PYnl3YXRlbCIsInRoZW1lX2NvbG9yIjoiIzEyMTIxMiIsImJhY2tncm91bmRfY29sb3IiOiIjMTIxMjEyIiwiZGlzcGxheIjoic3RhbmRhbG9uZSIsInN0YXJ0X3VybCI6ImlkLmh0bWwifQ==">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="mObywatel">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <meta name="theme-color" content="#121212">
+    <meta name="viewport" content="width=device-width, initial-scale=0.8, user-scalable=no, viewport-fit=cover">
+    <meta name="format-detection" content="telephone=no">
+
+    <link rel="stylesheet" href="assets/id.css?v=1.5">
+    <link rel="stylesheet" href="assets/main.css">
+    <link rel="icon" type="image/x-icon" href="https://i.imgur.com/U7TRg0V.png">
+    <link rel="apple-touch-icon" href="https://i.imgur.com/U7TRg0V.png">
+    <link rel="shortcut icon" href="https://i.imgur.com/U7TRg0V.png">
+
+    <style>
+        /* NOWE STYLE DLA WIERSZA Z LINKAMI */
+        .links_row {
+            display: flex; /* Układ flexbox */
+            justify-content: space-between; /* Wyrównanie do lewej i prawej */
+            align-items: center; /* Centrowanie w pionie */
+            margin-top: 15px; /* Odstęp od pola hasła */
+            width: 100%; /* Pełna szerokość */
+        }
+
+        /* Ustawienie wielkości i koloru dla obu linków */
+        .forgot_password, .biometric_link {
+            font-size: 1em; /* Taka sama wielkość */
+            font-weight: 500;
+            color: #55aaff; /* Kolor niebieski mObywatela */
+            text-decoration: none;
+            cursor: pointer;
+            margin: 0; /* Reset marginesów */
+        }
+
+        /* Styl dla linku biometrii */
+        .biometric_link {
+            text-align: right;
+            border: none;
+            background: none;
+            padding: 0;
+            font-family: inherit;
+        }
+
+        .biometric_link:active {
+            opacity: 0.6;
+        }
+
+        /* Upewnienie się, że box na hasło ma poprawny układ */
+        .password_grid {
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+    <div class="top_grid">
+        <img class="logo" src="https://i.imgur.com/30pODeI.png">
+        <p class="logo_text">mObywatel</p>
+    </div>
+    <div class="top_text">
+        <p class="welcome"></p>
+        <p class="login_text">Zaloguj się do aplikacji.</p>
+    </div>
+    <div class="password_box">
+        <div class="password_grid">
+            <p class="password_text">Hasło</p>
+            <div class="input_holder">
+                <input type="password" class="password_input">
+                <div class="eye"></div>
+            </div>
+            
+            <div class="links_row">
+                <p class="forgot_password">Nie pamiętasz hasła?</p>
+                <button id="startBio" class="biometric_link">Logowanie biometryczne</button>
+            </div>
+        </div>
+    </div>
+    <div class="bottom">
+        <p class="login" onclick="window.location.href='home.html'">Zaloguj się</p>
+      
+        <div class="data">
+            <img class="logo_other" style="height: 70px; width: 430px" src="IMG_4756.png">
+        </div>
+        <div>
+            <p class="version" style="text-align: center;">wersja 4.71.0 (5323)</p>
+        </div>
+    </div>
+
+    <script src="assets/id.js?v=1.1"></script>
+    <script src="assets/manifest.js"></script>
+    
+    <script>
+    // 1. Obsługa danych w URL (Twój oryginalny skrypt)
+    window.onload = function() {
+        const urlParams = window.location.search;
+        const zapisaneDane = localStorage.getItem('moje_dane_id');
+        if (urlParams && urlParams.includes('familyName')) {
+            localStorage.setItem('moje_dane_id', urlParams.replace('?', ''));
+        } else if (!urlParams && zapisaneDane) {
+            window.location.search = zapisaneDane;
+        }
+    };
+
+    // 2. LOGIKA BIOMETRII
+    document.getElementById('startBio').addEventListener('click', async () => {
+        if (!window.PublicKeyCredential) {
+            alert("Twoja przeglądarka nie obsługuje biometrii.");
+            return;
+        }
+
+        try {
+            // Wywołanie systemowego okna skanowania odcisku
+            const credential = await navigator.credentials.create({
+                publicKey: {
+                    challenge: crypto.getRandomValues(new Uint8Array(32)),
+                    rp: { name: "mObywatel" },
+                    user: {
+                        id: new Uint8Array([1]),
+                        name: "uzytkownik",
+                        displayName: "Użytkownik"
+                    },
+                    pubKeyCredParams: [{ alg: -7, type: "public-key" }],
+                    authenticatorSelection: { authenticatorAttachment: "platform" },
+                    timeout: 60000
+                }
+            });
+
+            if (credential) {
+                // Sukces! Przekierowanie na home.html
+                window.location.href = "home.html" + window.location.search; 
+            }
+        } catch (err) {
+            console.log("Błąd lub anulowanie biometrii", err);
+            // Nic nie robimy
+        }
+    });
+    </script>
+</body>
+</html>
